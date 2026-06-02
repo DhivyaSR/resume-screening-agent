@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Resume Screening Agent</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef4fc;
+      --surface: #ffffff;
+      --surface-soft: #f7f9fc;
+      --text: #0f172a;
+      --muted: #475569;
+      --primary: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --accent: #0284c7;
+      --success: #047857;
+      --border: #d1d5db;
+      --shadow: 0 28px 70px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(29, 78, 216, 0.16), transparent 22%),
+                  linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+      color: var(--text);
+    }
+
+    .page {
+      width: min(1600px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 36px 0 64px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 32px;
+      padding: 0 4px;
+    }
+
+    .brand {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.55fr);
+      gap: 32px;
+      padding: 48px 52px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 32px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-header {
+      display: grid;
+      gap: 22px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--primary);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: clamp(3rem, 4vw, 5rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-copy {
+      margin: 0;
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.75;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .hero-actions button {
+      min-width: 160px;
+      background: var(--primary);
+      border-radius: 16px;
+      box-shadow: 0 16px 26px rgba(37, 99, 235, 0.18);
+    }
+
+    .hero-panel {
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .hero-panel-card {
+      padding: 26px 28px;
+      border-radius: 28px;
+      background: var(--surface-soft);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+
+    .hero-panel-card h3 {
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+    }
+
+    .hero-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    .hero-list li {
+      display: grid;
+      gap: 10px;
+    }
+
+    .hero-list strong {
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .hero-list span {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    .panel {
+      margin-top: 36px;
+      padding: 44px 48px;
+      background: #ffffff;
+      border-radius: 32px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    .panel-intro {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .panel-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .panel-heading h2 {
+      margin: 0;
+      font-size: 1.75rem;
+    }
+
+    .panel-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      max-width: 600px;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: minmax(420px, 1.7fr) minmax(340px, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    .panel-left,
+    .panel-right {
+      display: grid;
+      gap: 24px;
+      min-width: 0;
+    }
+
+    .panel-right {
+      position: sticky;
+      top: 32px;
+      align-self: start;
+    }
+
+    .panel-right .status-card {
+      padding: 28px;
+      border-radius: 26px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(255, 255, 255, 0.9));
+      border: 1px solid rgba(37, 99, 235, 0.18);
+    }
+
+    .panel-right .status-card h3 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+    }
+
+    .panel-right .status-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    label {
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      font-size: 0.95rem;
+    }
+
+    textarea,
+    input[type=file] {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: var(--surface-soft);
+      padding: 20px 18px;
+      font-size: 1rem;
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 170px;
+      resize: vertical;
+    }
+
+    .file-drop {
+      display: grid;
+      gap: 14px;
+      padding: 24px;
+      border: 2px dashed rgba(37, 99, 235, 0.2);
+      border-radius: 20px;
+      background: rgba(37, 99, 235, 0.06);
+      text-align: center;
+      color: var(--text);
+    }
+
+    .file-drop div {
+      font-size: 0.98rem;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 8px;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      padding: 0 30px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), #1e40af);
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+      box-shadow: 0 20px 30px rgba(37, 99, 235, 0.18);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 24px 36px rgba(37, 99, 235, 0.22);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .results {
+      margin-top: 24px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      padding: 24px;
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: var(--surface-soft);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    }
+
+    .card h3,
+    .card h4 {
+      margin: 0 0 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.12);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .result-card {
+      border-left: 4px solid rgba(37, 99, 235, 0.84);
+      background: #ffffff;
+    }
+
+    .candidate-card {
+      padding: 24px;
+      border-radius: 24px;
+      background: #ffffff;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 18px 32px rgba(15, 23, 42, 0.05);
+    }
+
+    .candidate-card h4 {
+      margin: 0 0 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-size: 1.15rem;
+    }
+
+    .skill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .skill-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(29, 78, 216, 0.1);
+      color: #1e40af;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .qa-block {
+      margin-top: 16px;
+      background: #f3f7ff;
+      border-radius: 20px;
+      border: 1px solid rgba(37, 99, 235, 0.14);
+      padding: 20px;
+    }
+
+    .qa-block p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+
+    .output-list {
+      margin: 18px 0 0;
+      padding-left: 18px;
+      list-style: none;
+    }
+
+    .output-list li {
+      margin-bottom: 12px;
+      line-height: 1.6;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(248, 250, 252, 0.98);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .output-list strong {
+      font-size: 1rem;
+      color: var(--text);
+    }
+
+    pre {
+      margin: 12px 0 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #eef4ff;
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid rgba(59, 130, 246, 0.16);
+      color: #1e40af;
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+
+    @media (max-width: 1120px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-right {
+        position: static;
+        top: auto;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .hero,
+      .panel {
+        padding: 24px;
+      }
+
+      .page {
+        width: calc(100% - 24px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">AI Screening Studio</div>
+      <nav class="nav-links">
+        <a href="#">Overview</a>
+        <a href="#">Screening</a>
+        <a href="#">Insights</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-header">
+        <div class="hero-badge">Enterprise-ready screening</div>
+        <h1 class="hero-title">Professional resume evaluation for modern recruiting teams.</h1>
+        <p class="hero-copy">Turn job descriptions and candidate resumes into ranked shortlists, skills summaries, and interview-ready questions in one premium dashboard.</p>
+        <div class="hero-actions">
+          <button type="button" onclick="document.getElementById('jd').focus()">Start screening</button>
+        </div>
+      </div>
+
+      <div class="hero-panel">
+        <div class="hero-panel-card">
+          <h3>Why hiring teams love it</h3>
+          <ul class="hero-list">
+            <li><strong>Fast candidate ranking</strong><span>Instant AI-powered scoring so you can focus on interviews, not manual review.</span></li>
+            <li><strong>Clear recruiter insights</strong><span>See job-fit, skills, and experience summary for each candidate at a glance.</span></li>
+            <li><strong>Interview-ready questions</strong><span>Get tailored, role-specific questions for top matches automatically.</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <p class="eyebrow">Screen resumes</p>
+        <h2>Rich candidate review in one screen</h2>
+        <p class="panel-intro">Upload resumes and a job description, then review the ranked shortlist with recruiter-ready insights on demand.</p>
+      </div>
+
+      <div class="panel-grid">
+        <div class="panel-left">
+          <div class="field">
+            <label for="jd">Job description</label>
+            <textarea id="jd" placeholder="Paste the job description here..."></textarea>
+          </div>
+
+          <div class="field">
+            <label for="files">Resume files</label>
+            <div class="file-drop">
+              <input id="files" type="file" accept=".pdf,.txt" multiple />
+              <div>Upload PDF or TXT resumes. Choose one or more files.</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="go" onclick="screen()">Screen candidates</button>
+          </div>
+        </div>
+
+        <aside class="panel-right">
+          <div class="status-card">
+            <h3>Assessment output</h3>
+            <p>This panel remains visible while you review results. After screening, the candidate ranking and recruiter insights appear below.</p>
+          </div>
+
+          <div id="out" class="results">
+            <div class="card">
+              <h3>Ready to screen</h3>
+              <p>Enter a job description and upload resumes to reveal the ranked shortlist and recruiter insights.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function screen() {
+      const jd = document.getElementById('jd').value.trim();
+      const files = document.getElementById('files').files;
+      const out = document.getElementById('out');
+      const go = document.getElementById('go');
+
+      if (!jd) {
+        alert('Please paste a job description.');
+        return;
+      }
+      if (files.length === 0) {
+        alert('Please upload at least one resume.');
+        return;
+      }
+
+      const form = new FormData();
+      form.append('job_description', jd);
+      for (const file of files) form.append('files', file);
+
+      go.disabled = true;
+      out.innerHTML = '<div class="card"><strong>Screening ' + files.length + ' resume(s)</strong><p>Please wait while the AI reviews the candidates.</p></div>';
+
+      try {
+        const response = await fetch('/screen', { method: 'POST', body: form });
+        const data = await response.json();
+
+        if (data.error) {
+          out.innerHTML = '<div class="card" style="border-color:#fca5a5;background:#fef2f2;"><strong style="color:#b91c1c">Error</strong><p>' + data.error + '</p></div>';
+          return;
+        }
+
+        let html = '<div class="card result-card"><h3>Candidate ranking</h3><ul class="output-list">';
+        data.ranking.forEach(candidate => {
+          html += `<li><strong>${candidate.name}</strong><span class="chip">${candidate.score}</span></li>`;
+        });
+        html += '</ul></div>';
+
+        html += '<div class="card"><h3>Top matches</h3>';
+        data.top.forEach(candidate => {
+          const skills = candidate.skills?.map(skill => `<span class="skill-pill">${skill}</span>`).join(' ') || 'N/A';
+          html += `<div class="candidate-card"><h4>${candidate.name} <span class="chip">${candidate.score}</span></h4>`;
+          html += `<div class="skill-list">${skills}</div>`;
+          html += `<div class="qa-block"><p><strong>Suggested interview questions</strong></p><pre>${candidate.questions}</pre></div>`;
+          html += `</div>`;
+        });
+        html += '</div>';
+
+        out.innerHTML = html;
+        out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (error) {
+        out.innerHTML = '<div class="card" style="border-color:#fca5a5;background:#fef2f2;"><strong style="color:#b91c1c">Error</strong><p>' + error.message + '</p></div>';
+        out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } finally {
+        go.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
